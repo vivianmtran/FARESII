@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Impact of FARES II at Your Institution", layout="centered")
-st.title("📊 Impact of FARES II at Your Institution")
+st.title("🏥 Impact of FARES II at Your Institution")
 
 st.markdown("""
 This tool models the clinical and economic impact of replacing Fresh Plasma (FP) with 4F-PCC (Octaplex) in cardiac surgery patients, based on findings from the **FARES-II** study.
@@ -40,9 +40,34 @@ rbc_saved = reduction_rbc * patients_receiving_plasma
 platelets_saved = reduction_platelet * patients_receiving_plasma
 bypass_saved = reduction_bypass * patients_receiving_plasma
 
-# Plasma estimate: 4 plasma units per surgery
-plasma_saved = 4 * patients_receiving_plasma
+# Visualization data
+cost_labels = ['RBC Savings', 'Platelet Savings', 'Bypassing Agent Savings']
+cost_values = [reduction_rbc * cost_rbc_unit * patients_receiving_plasma,
+               reduction_platelet * cost_platelet_unit * patients_receiving_plasma,
+               reduction_bypass * cost_bypass_agent * patients_receiving_plasma]
 
+st.markdown(f"**\n🧮 Patients receiving plasma per year:** `{int(patients_receiving_plasma)}`")
+st.markdown(f"**💰 Estimated cost savings per patient:** `${per_patient_saving:,.2f}`")
+st.markdown(f"**💰 Total estimated annual savings:** `${total_saving:,.2f}`")
+
+st.markdown("### 🧍 Per-Patient Blood Product Reduction")
+st.markdown(f"- RBC units saved: `{reduction_rbc}`")
+st.markdown(f"- Platelet units saved: `{reduction_platelet}`")
+st.markdown(f"- Bypassing agent doses avoided: `{reduction_bypass}`")
+
+st.markdown("### 🏥 Your Hospital Saves (Annually)")
+st.markdown(f"- RBC units saved: `{rbc_saved:,.1f}`")
+st.markdown(f"- Platelet units saved: `{platelets_saved:,.1f}`")
+st.markdown(f"- Bypassing agent doses avoided: `{bypass_saved:,.1f}`")
+
+# Cost savings visualization
+fig, ax = plt.subplots()
+ax.bar(cost_labels, cost_values, color=['#ff9999','#66b3ff','#99ff99'])
+ax.set_ylabel('Cost Savings ($)')
+ax.set_title('Annual Cost Savings by Blood Product Category')
+st.pyplot(fig)
+
+st.subheader("📈 Clinical Benefits of Octaplex (4F-PCC) vs FP")
 clinical_benefits = {
     "Hemostatic Effectiveness": "+17.6%",
     "Serious Adverse Events": "-23%",
@@ -50,39 +75,6 @@ clinical_benefits = {
     "Transfusion Needs": "-29%",
     "24-hr Blood Loss": "-25%"
 }
-
-st.markdown(f"### 🧍‍♂️ Patient Impact")
-st.markdown(f"<h1 style='font-size:70px'>🧍</h1>", unsafe_allow_html=True)
-st.markdown(f"Each patient saves:")
-st.markdown(f"- RBC units: `{reduction_rbc}`")
-st.markdown(f"- Platelet units: `{reduction_platelet}`")
-st.markdown(f"- Bypassing agent doses: `{reduction_bypass}`")
-st.markdown(f"- Plasma units: `4` (≈ 2000 IU of Octaplex)")
-
-st.markdown("---")
-st.markdown("### 🏥 Institution-Wide Savings")
-st.markdown(f"- Patients receiving plasma per year: `{int(patients_receiving_plasma)}`")
-st.markdown(f"- RBC units saved: `{rbc_saved:,.1f}`")
-st.markdown(f"- Platelet units saved: `{platelets_saved:,.1f}`")
-st.markdown(f"- Bypassing agent doses avoided: `{bypass_saved:,.1f}`")
-st.markdown(f"- Plasma units replaced by Octaplex: `{plasma_saved:,.1f}`")
-st.markdown(f"- 💰 Estimated cost savings per patient: `${per_patient_saving:,.2f}`")
-st.markdown(f"- 💰 Total estimated annual savings: `${total_saving:,.2f}`")
-
-# Bar chart visualization
-fig, ax = plt.subplots(figsize=(6, 4))
-labels = ["RBC ($)", "Platelets ($)", "Bypassing Agent ($)"]
-savings = [
-    reduction_rbc * cost_rbc_unit * patients_receiving_plasma,
-    reduction_platelet * cost_platelet_unit * patients_receiving_plasma,
-    reduction_bypass * cost_bypass_agent * patients_receiving_plasma,
-]
-ax.bar(labels, savings, color=["#c0392b", "#f1c40f", "#3498db"])
-ax.set_title("💵 Cost Savings Breakdown")
-ax.set_ylabel("Total Annual Savings ($)")
-st.pyplot(fig)
-
-st.subheader("📈 Clinical Benefits of Octaplex (4F-PCC) vs FP")
 st.dataframe(pd.DataFrame.from_dict(clinical_benefits, orient='index', columns=["Improvement"]))
 
 st.markdown("---")
