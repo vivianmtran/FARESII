@@ -1,59 +1,53 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Octaplex vs Plasma: Cost Impact (FARES-II)", layout="centered")
-st.title("🔬 Octaplex vs Plasma Replacement – Cost Model (Based on FARES-II Study)")
+st.set_page_config(page_title="Octaplex vs Plasma – FARES II Cost & Outcome Model", layout="centered")
+st.title("💉 Octaplex vs Fresh Plasma – FARES II-Based Cost & Outcome Model")
 
 st.markdown("""
-This tool helps estimate **cost savings** when replacing **plasma with Octaplex** in cardiac surgery patients, based on the FARES-II study findings [(JAMA 2024)](https://jamanetwork.com/journals/jama/article-abstract/2832096).
+This tool models the clinical and economic impact of replacing Fresh Plasma (FP) with 4F-PCC (Octaplex) in cardiac surgery patients, based on findings from the **FARES-II** study.
 """)
 
-st.header("📥 Inputs")
+st.header("🔢 1. Clinical Input Parameters")
+
+surgeries = st.number_input("Total number of cardiac surgeries per year:", min_value=0, value=1000)
+plasma_pct = st.slider("% of patients requiring plasma replacement:", 0, 100, 40)
+patients_receiving_plasma = surgeries * (plasma_pct / 100)
+
+st.header("⚙️ 2. Customize Assumptions")
 col1, col2 = st.columns(2)
-
 with col1:
-    total_surgeries = st.number_input("Annual cardiac surgeries", min_value=0, value=1000)
-    percent_plasma_use = st.slider("% requiring plasma replacement", 0, 100, 60)
-    rbc_cost = st.number_input("Cost per RBC unit ($)", min_value=0, value=600)
-    platelet_cost = st.number_input("Cost per platelet unit ($)", min_value=0, value=500)
-
+    cost_rbc_unit = st.number_input("💲 Cost per unit of RBC:", min_value=0, value=600)
+    cost_platelet_unit = st.number_input("💲 Cost per unit of Platelets:", min_value=0, value=500)
+    cost_bypass_agent = st.number_input("💲 Cost per unit of bypassing agent:", min_value=0, value=2500)
 with col2:
-    bypassing_agent_cost = st.number_input("Cost per bypassing agent dose ($)", min_value=0, value=2500)
-    hosp_day_cost = st.number_input("Cost per hospital day ($)", min_value=0, value=1500)
-    days_reduced = st.slider("Hospital days reduced with Octaplex", 0.0, 5.0, 1.0, step=0.5)
-    toggle_comparison = st.checkbox("Show side-by-side cost comparison", value=True)
+    reduction_rbc = st.number_input("⬇️ RBC reduction per patient:", min_value=0.0, value=1.0)
+    reduction_platelet = st.number_input("⬇️ Platelet reduction per patient:", min_value=0.0, value=1.5)
+    reduction_bypass = st.number_input("⬇️ Bypassing agent reduction per patient:", min_value=0.0, value=1.0)
 
-# Calculations
-eligible_patients = total_surgeries * (percent_plasma_use / 100)
+st.header("📊 3. Outcome Projections")
 
-savings_rbc = eligible_patients * rbc_cost  # 1 unit saved
-savings_platelet = eligible_patients * platelet_cost * 1.5  # 1.5 units saved
-savings_bypassing = eligible_patients * bypassing_agent_cost  # 1 unit saved
-savings_hosp_days = eligible_patients * hosp_day_cost * days_reduced
+per_patient_saving = (
+    reduction_rbc * cost_rbc_unit
+    + reduction_platelet * cost_platelet_unit
+    + reduction_bypass * cost_bypass_agent
+)
+total_saving = per_patient_saving * patients_receiving_plasma
 
-total_savings = savings_rbc + savings_platelet + savings_bypassing + savings_hosp_days
+clinical_benefits = {
+    "Hemostatic Effectiveness": "+17.6%",
+    "Serious Adverse Events": "-23%",
+    "Acute Kidney Injury": "-45%",
+    "Transfusion Needs": "-29%",
+    "24-hr Blood Loss": "-25%"
+}
 
-# Output
-st.header("💸 Projected Annual Savings")
+st.markdown(f"**Patients receiving plasma per year:** `{int(patients_receiving_plasma)}`")
+st.markdown(f"**Estimated cost savings per patient:** `${per_patient_saving:,.2f}`")
+st.markdown(f"**Total estimated annual savings:** `${total_saving:,.2f}`")
 
-st.metric("Eligible patients (Octaplex instead of Plasma)", f"{int(eligible_patients)}")
-st.metric("Total Annual Savings ($)", f"${total_savings:,.0f}")
+st.subheader("📈 Clinical Benefits of Octaplex (4F-PCC) vs FP")
+st.dataframe(pd.DataFrame.from_dict(clinical_benefits, orient='index', columns=["Improvement"]))
 
-if toggle_comparison:
-    st.subheader("💡 Savings Breakdown")
-    breakdown_df = pd.DataFrame({
-        'Category': ['RBC units saved', 'Platelets saved', 'Bypassing agents saved', 'Shorter hospital stay'],
-        'Savings ($)': [savings_rbc, savings_platelet, savings_bypassing, savings_hosp_days]
-    })
-
-    st.bar_chart(breakdown_df.set_index('Category'))
-
-    with st.expander("📁 Download Data"):
-        st.download_button(
-            label="Download savings breakdown as CSV",
-            data=breakdown_df.to_csv(index=False).encode('utf-8'),
-            file_name='fares_ii_cost_savings.csv',
-            mime='text/csv'
-        )
-
-st.info("This model is for estimation purposes only and based on assumptions from the FARES-II study (JAMA, 2024). Customize inputs as needed.")
+st.markdown("---")
+st.caption("Based on FARES-II study (JAMA 2024) and user-defined cost assumptions.")
