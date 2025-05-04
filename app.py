@@ -85,3 +85,4 @@ st.dataframe(pd.DataFrame.from_dict(clinical_benefits, orient='index', columns=[
 
 st.markdown("---")
 st.caption("Based on FARES-II study (JAMA 2024) and user-defined cost assumptions.")
+
