@@ -11,7 +11,7 @@ This tool models the clinical and economic impact of replacing Fresh Plasma (FP)
 st.header("🔢 1. Clinical Input Parameters")
 
 surgeries = st.number_input("Total number of cardiac surgeries per year:", min_value=0, value=1000)
-plasma_pct = st.slider("% of patients requiring plasma replacement:", 0, 100, 40)
+plasma_pct = st.slider("% of patients requiring plasma replacement:", 0, 100, 15)
 patients_receiving_plasma = surgeries * (plasma_pct / 100)
 
 st.header("⚙️ 2. Customize Assumptions")
@@ -34,6 +34,11 @@ per_patient_saving = (
 )
 total_saving = per_patient_saving * patients_receiving_plasma
 
+# Blood product totals saved
+rbc_saved = reduction_rbc * patients_receiving_plasma
+platelets_saved = reduction_platelet * patients_receiving_plasma
+bypass_saved = reduction_bypass * patients_receiving_plasma
+
 clinical_benefits = {
     "Hemostatic Effectiveness": "+17.6%",
     "Serious Adverse Events": "-23%",
@@ -42,9 +47,14 @@ clinical_benefits = {
     "24-hr Blood Loss": "-25%"
 }
 
-st.markdown(f"**Patients receiving plasma per year:** `{int(patients_receiving_plasma)}`")
-st.markdown(f"**Estimated cost savings per patient:** `${per_patient_saving:,.2f}`")
-st.markdown(f"**Total estimated annual savings:** `${total_saving:,.2f}`")
+st.markdown(f"**\n🧮 Patients receiving plasma per year:** `{int(patients_receiving_plasma)}`")
+st.markdown(f"**💰 Estimated cost savings per patient:** `${per_patient_saving:,.2f}`")
+st.markdown(f"**💰 Total estimated annual savings:** `${total_saving:,.2f}`")
+
+st.markdown("### 🩸 Blood Products Saved Annually")
+st.markdown(f"- RBC units saved: `{rbc_saved:,.1f}`")
+st.markdown(f"- Platelet units saved: `{platelets_saved:,.1f}`")
+st.markdown(f"- Bypassing agent doses avoided: `{bypass_saved:,.1f}`")
 
 st.subheader("📈 Clinical Benefits of Octaplex (4F-PCC) vs FP")
 st.dataframe(pd.DataFrame.from_dict(clinical_benefits, orient='index', columns=["Improvement"]))
