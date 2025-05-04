@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Octaplex vs Plasma – FARES II Cost & Outcome Model", layout="centered")
 st.title("💉 Octaplex vs Fresh Plasma – FARES II-Based Cost & Outcome Model")
@@ -51,10 +52,33 @@ st.markdown(f"**\n🧮 Patients receiving plasma per year:** `{int(patients_rece
 st.markdown(f"**💰 Estimated cost savings per patient:** `${per_patient_saving:,.2f}`")
 st.markdown(f"**💰 Total estimated annual savings:** `${total_saving:,.2f}`")
 
+st.markdown("### 🧍‍♂️ Blood Products Saved Per Patient")
+st.markdown(f"- RBC units saved per patient: `{reduction_rbc}`")
+st.markdown(f"- Platelet units saved per patient: `{reduction_platelet}`")
+st.markdown(f"- Bypassing agent doses avoided per patient: `{reduction_bypass}`")
+
 st.markdown("### 🩸 Blood Products Saved Annually")
 st.markdown(f"- RBC units saved: `{rbc_saved:,.1f}`")
 st.markdown(f"- Platelet units saved: `{platelets_saved:,.1f}`")
 st.markdown(f"- Bypassing agent doses avoided: `{bypass_saved:,.1f}`")
+
+# 🔍 Visualization
+st.markdown("### 📊 Visual Summary")
+
+labels = ["RBC Units", "Platelet Units", "Bypassing Agents"]
+per_patient_data = [reduction_rbc, reduction_platelet, reduction_bypass]
+total_data = [rbc_saved, platelets_saved, bypass_saved]
+
+fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+ax[0].bar(labels, per_patient_data, color=['#1f77b4', '#ff7f0e', '#2ca02c'])
+ax[0].set_title("Blood Products Saved Per Patient")
+ax[0].set_ylabel("Units Saved")
+
+ax[1].bar(labels, total_data, color=['#1f77b4', '#ff7f0e', '#2ca02c'])
+ax[1].set_title("Blood Products Saved Annually")
+ax[1].set_ylabel("Units Saved")
+
+st.pyplot(fig)
 
 st.subheader("📈 Clinical Benefits of Octaplex (4F-PCC) vs FP")
 st.dataframe(pd.DataFrame.from_dict(clinical_benefits, orient='index', columns=["Improvement"]))
